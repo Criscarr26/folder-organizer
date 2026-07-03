@@ -1,0 +1,57 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Instalar dependencias",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pip",
+				"install",
+				"-r",
+				"requirements.txt"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Ejecutar organizador",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"main.py",
+				"organize",
+				"--help"
+			],
+			"group": {
+				"kind": "test"
+			}
+		},
+		{
+			"label": "Ejecutar tests",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pytest",
+				"tests/",
+				"-v"
+			]
+		},
+		{
+			"label": "Validar sintaxis",
+			"type": "shell",
+			"command": "python -m py_compile src/config.py src/classifier.py src/organizer.py src/cli.py main.py",
+			"group": "build"
+		}
+	]
+}

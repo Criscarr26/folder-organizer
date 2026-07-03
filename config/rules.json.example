@@ -1,0 +1,32 @@
+# Configuración de ejemplo
+# Este archivo de ejemplo muestra la estructura de las reglas de organización
+{
+  "images": {
+    "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg"],
+    "folder": "Imágenes"
+  },
+  "documents": {
+    "extensions": [".pdf", ".doc", ".docx", ".txt", ".xlsx", ".pptx", ".odt"],
+    "folder": "Documentos"
+  },
+  "videos": {
+    "extensions": [".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"],
+    "folder": "Videos"
+  },
+  "audio": {
+    "extensions": [".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".m4a"],
+    "folder": "Audio"
+  },
+  "archives": {
+    "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".iso"],
+    "folder": "Archivos"
+  },
+  "code": {
+    "extensions": [".py", ".js", ".ts", ".java", ".cpp", ".c", ".html", ".css"],
+    "folder": "Código"
+  },
+  "executables": {
+    "extensions": [".exe", ".msi", ".app", ".dmg", ".deb", ".rpm"],
+    "folder": "Ejecutables"
+  }
+}
