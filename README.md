@@ -1,125 +1,125 @@
-# 📁 Organizador Automático de Carpetas
+# 📁 Automatic Folder Organizer
 
-Un organizador de carpetas inteligente y automatizado escrito en Python que clasifica y organiza archivos automáticamente según su tipo, extensión y otras propiedades.
+A smart, automated folder organizer written in Python that classifies and organizes files automatically based on their type, extension and other properties.
 
-## ✨ Características
+## ✨ Features
 
-- 🎯 **Clasificación Automática**: Clasifica archivos por tipo (imágenes, documentos, videos, audio, etc.)
-- 📊 **Análisis de Archivos**: Analiza carpetas sin mover nada (modo `--dry-run`)
-- ⚙️ **Personalizable**: Crea tus propias reglas de organización en JSON
-- 🔍 **Detección Inteligente**: Detecta conflictos de nombres y los resuelve automáticamente
-- 📝 **Logging Detallado**: Registro completo de todas las operaciones
-- 🖥️ **CLI Intuitiva**: Interfaz de línea de comandos fácil de usar
+- 🎯 **Automatic classification**: Sorts files by type (images, documents, videos, audio, etc.)
+- 📊 **File analysis**: Analyzes folders without moving anything (`--dry-run` mode)
+- ⚙️ **Customizable**: Create your own organization rules in JSON
+- 🔍 **Smart detection**: Detects name conflicts and resolves them automatically
+- 📝 **Detailed logging**: Full record of every operation
+- 🖥️ **Intuitive CLI**: Easy-to-use command-line interface
 
-## 🚀 Instalación
+## 🚀 Installation
 
-### Requisitos
+### Requirements
 - Python 3.11+
 - pip
 
-### Pasos de Instalación
+### Installation steps
 
-1. **Clonar el repositorio**
+1. **Clone the repository**
 ```bash
-git clone <url-del-repositorio>
+git clone <repository-url>
 cd FolderOrganizer
 ```
 
-2. **Crear entorno virtual**
+2. **Create a virtual environment**
 ```bash
 python -m venv venv
-# En Windows:
+# On Windows:
 venv\Scripts\activate
-# En Linux/Mac:
+# On Linux/Mac:
 source venv/bin/activate
 ```
 
-3. **Instalar dependencias**
+3. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Crear configuración (opcional)**
+4. **Create configuration (optional)**
 ```bash
 python main.py init-config
 ```
 
-## 💡 Uso Rápido
+## 💡 Quick usage
 
-### Organizar carpeta actual
+### Organize the current folder
 ```bash
 python main.py organize
 ```
 
-### Organizar carpeta específica
+### Organize a specific folder
 ```bash
-python main.py organize --path /ruta/a/carpeta
+python main.py organize --path /path/to/folder
 ```
 
-### Modo simulación (sin mover archivos)
+### Simulation mode (without moving files)
 ```bash
-python main.py organize --path /ruta --dry-run
+python main.py organize --path /path --dry-run
 ```
 
-### Analizar archivos sin mover
+### Analyze files without moving
 ```bash
-python main.py analyze --path /ruta
+python main.py analyze --path /path
 ```
 
-## 📋 Comandos Disponibles
+## 📋 Available commands
 
 ### `organize`
-Organiza los archivos en carpetas según su tipo.
+Organizes files into folders by type.
 
-**Opciones:**
-- `--path PATH`: Ruta a organizar (por defecto: carpeta actual)
-- `--config CONFIG`: Archivo de configuración JSON personalizado
-- `--dry-run`: Simular sin mover archivos
-- `--verbose`: Modo verbose para más detalles
+**Options:**
+- `--path PATH`: Path to organize (default: current folder)
+- `--config CONFIG`: Custom JSON configuration file
+- `--dry-run`: Simulate without moving files
+- `--verbose`: Verbose mode for more detail
 
-**Ejemplo:**
+**Example:**
 ```bash
 python main.py organize --path ~/Downloads --dry-run
 ```
 
 ### `analyze`
-Analiza una carpeta y muestra cómo se organizarían los archivos.
+Analyzes a folder and shows how the files would be organized.
 
-**Opciones:**
-- `--path PATH`: Carpeta a analizar (por defecto: carpeta actual)
-- `--config CONFIG`: Archivo de configuración a usar
+**Options:**
+- `--path PATH`: Folder to analyze (default: current folder)
+- `--config CONFIG`: Configuration file to use
 
-**Ejemplo:**
+**Example:**
 ```bash
 python main.py analyze --path ~/Downloads
 ```
 
 ### `init-config`
-Crea un archivo de configuración predeterminado.
+Creates a default configuration file.
 
-**Opciones:**
-- `--config PATH`: Ruta de salida para el archivo de configuración
+**Options:**
+- `--config PATH`: Output path for the configuration file
 
-**Ejemplo:**
+**Example:**
 ```bash
 python main.py init-config --config ./config/my-rules.json
 ```
 
-## 🔧 Configuración Personalizada
+## 🔧 Custom configuration
 
-### Estructura del archivo de configuración
+### Configuration file structure
 
-Crea un archivo `config/rules.json`:
+Create a `config/rules.json` file:
 
 ```json
 {
   "images": {
     "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp"],
-    "folder": "Imágenes"
+    "folder": "Images"
   },
   "documents": {
     "extensions": [".pdf", ".doc", ".docx", ".txt", ".xlsx"],
-    "folder": "Documentos"
+    "folder": "Documents"
   },
   "videos": {
     "extensions": [".mp4", ".avi", ".mkv", ".mov", ".wmv"],
@@ -128,9 +128,9 @@ Crea un archivo `config/rules.json`:
 }
 ```
 
-### Variables de entorno
+### Environment variables
 
-Copia `.env.example` a `.env` y personaliza:
+Copy `.env.example` to `.env` and customize:
 
 ```bash
 LOG_LEVEL=INFO
@@ -140,58 +140,58 @@ WATCH_FOLDER=./downloads
 AUTO_ORGANIZE=false
 ```
 
-## 📚 Documentación de Módulos
+## 📚 Module documentation
 
 ### `config.py`
-Gestiona la configuración del aplicativo desde variables de entorno y archivos JSON.
+Manages the application configuration from environment variables and JSON files.
 
-**Clases principales:**
-- `ConfigManager`: Carga y gestiona la configuración
+**Main classes:**
+- `ConfigManager`: Loads and manages the configuration
 
 ### `classifier.py`
-Clasifica archivos según su tipo y extensión.
+Classifies files by type and extension.
 
-**Clases principales:**
-- `FileClassifier`: Clasifica archivos individuales y en lotes
+**Main classes:**
+- `FileClassifier`: Classifies files individually and in batches
 
 ### `organizer.py`
-Orquesta la organización de archivos en carpetas.
+Orchestrates the organization of files into folders.
 
-**Clases principales:**
-- `FolderOrganizer`: Organiza archivos y mantiene estadísticas
+**Main classes:**
+- `FolderOrganizer`: Organizes files and keeps statistics
 
 ### `cli.py`
-Proporciona la interfaz de línea de comandos.
+Provides the command-line interface.
 
-**Funciones principales:**
-- `organize()`: Comando principal de organización
-- `analyze()`: Analiza archivos sin moverlos
-- `init_config()`: Inicializa archivo de configuración
+**Main functions:**
+- `organize()`: Main organization command
+- `analyze()`: Analyzes files without moving them
+- `init_config()`: Initializes the configuration file
 
-## 🧪 Pruebas
+## 🧪 Tests
 
-Ejecutar pruebas unitarias:
+Run the unit tests:
 
 ```bash
 pytest tests/
 ```
 
-Con cobertura:
+With coverage:
 
 ```bash
 pytest tests/ --cov=src
 ```
 
-## 📝 Estructura del Proyecto
+## 📝 Project structure
 
 ```
 .
 ├── src/
 │   ├── __init__.py
-│   ├── config.py        # Gestión de configuración
-│   ├── classifier.py    # Clasificación de archivos
-│   ├── organizer.py     # Orquestación
-│   └── cli.py           # Interfaz de línea de comandos
+│   ├── config.py        # Configuration management
+│   ├── classifier.py    # File classification
+│   ├── organizer.py     # Orchestration
+│   └── cli.py           # Command-line interface
 ├── tests/
 │   ├── __init__.py
 │   ├── test_classifier.py
@@ -199,83 +199,83 @@ pytest tests/ --cov=src
 ├── config/
 │   └── rules.json.example
 ├── docs/
-├── main.py              # Punto de entrada
+├── main.py              # Entry point
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
 
-## 🔄 Flujo de Funcionamiento
+## 🔄 How it works
 
 ```
-Usuario ejecuta comando CLI
+User runs a CLI command
          ↓
-ConfigManager carga configuración
+ConfigManager loads configuration
          ↓
-FileClassifier clasifica archivos
+FileClassifier classifies files
          ↓
-FolderOrganizer organiza archivos
+FolderOrganizer organizes files
          ↓
-Logs y estadísticas
+Logs and statistics
 ```
 
-## 🐛 Ejemplos de Uso
+## 🐛 Usage examples
 
-### Caso 1: Organizar carpeta de descargas
+### Case 1: Organize the downloads folder
 ```bash
 python main.py organize --path ~/Downloads
 ```
 
-### Caso 2: Vista previa antes de organizar
+### Case 2: Preview before organizing
 ```bash
 python main.py analyze --path ~/Downloads
 python main.py organize --path ~/Downloads --dry-run
 python main.py organize --path ~/Downloads
 ```
 
-### Caso 3: Usar configuración personalizada
+### Case 3: Use a custom configuration
 ```bash
 python main.py init-config --config config/custom-rules.json
-# Editar config/custom-rules.json
+# Edit config/custom-rules.json
 python main.py organize --path ~/Downloads --config config/custom-rules.json
 ```
 
-## 🔐 Seguridad
+## 🔐 Safety
 
-- Los archivos duplicados se renombran automáticamente
-- Modo `--dry-run` para previsualizar cambios
-- Logging detallado de todas las operaciones
-- No se elimina nada, solo se reorganiza
+- Duplicate files are renamed automatically
+- `--dry-run` mode to preview changes
+- Detailed logging of every operation
+- Nothing is deleted, only reorganized
 
-## 📦 Dependencias
+## 📦 Dependencies
 
 - **click**: CLI framework
-- **loguru**: Sistema de logging
-- **python-dotenv**: Gestión de variables de entorno
-- **pathlib2**: Manipulación de rutas
+- **loguru**: Logging system
+- **python-dotenv**: Environment-variable management
+- **pathlib2**: Path manipulation
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo licencia MIT.
+This project is under the MIT license.
 
-## 👤 Autor
+## 👤 Author
 
-Creado como herramienta de automatización con Python.
+Built as a Python automation tool.
 
-## 🤝 Contribuciones
+## 🤝 Contributing
 
-Las contribuciones son bienvenidas. Por favor:
+Contributions are welcome. Please:
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📧 Soporte
+## 📧 Support
 
-Para reportar issues o sugerencias, abre un issue en el repositorio.
+To report issues or suggestions, open an issue in the repository.
 
 ---
 
-⭐ Si te fue útil, ¡no olvides darle una estrella! ⭐
+⭐ If it was useful, don't forget to give it a star! ⭐
