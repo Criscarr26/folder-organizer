@@ -1,281 +1,230 @@
-# 📁 Automatic Folder Organizer
+# Automatic Folder Organizer
 
-A smart, automated folder organizer written in Python that classifies and organizes files automatically based on their type, extension and other properties.
+A Python CLI that sorts files into folders by type and gathers scattered code
+projects into a single directory.
 
-## ✨ Features
+**No dependencies.** Standard library only, Python 3.9+. Clone it and run it —
+there is nothing to install.
 
-- 🎯 **Automatic classification**: Sorts files by type (images, documents, videos, audio, etc.)
-- 📊 **File analysis**: Analyzes folders without moving anything (`--dry-run` mode)
-- ⚙️ **Customizable**: Create your own organization rules in JSON
-- 🔍 **Smart detection**: Detects name conflicts and resolves them automatically
-- 📝 **Detailed logging**: Full record of every operation
-- 🖥️ **Intuitive CLI**: Easy-to-use command-line interface
+## Quick start
 
-## 🚀 Installation
-
-### Requirements
-- Python 3.11+
-- pip
-
-### Installation steps
-
-1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd FolderOrganizer
+python main.py analyze --path "C:/Users/me/Downloads"
 ```
 
-2. **Create a virtual environment**
 ```bash
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On Linux/Mac:
-source venv/bin/activate
+python main.py organize --path "C:/Users/me/Downloads" --dry-run
 ```
 
-3. **Install dependencies**
 ```bash
-pip install -r requirements.txt
+python main.py organize --path "C:/Users/me/Downloads" --yes
 ```
 
-4. **Create configuration (optional)**
-```bash
-python main.py init-config
+`analyze` and `--dry-run` never touch a file. Without `--dry-run` the command
+shows the plan and asks for confirmation before moving anything; `--yes` skips
+the prompt for use in scripts.
+
+## What it does
+
+Given a folder like this:
+
+```
+Downloads/
+├── invoice.pdf
+├── holiday.jpg
+├── budget.xlsx
+├── invoice-copy.pdf      <- byte-identical to invoice.pdf
+└── setup.exe
 ```
 
-## 💡 Quick usage
+`organize` turns it into:
 
-### Organize the current folder
-```bash
-python main.py organize
+```
+Downloads/
+├── Documentos/invoice.pdf
+├── Imágenes/holiday.jpg
+├── Hojas de cálculo/budget.xlsx
+├── Instaladores/setup.exe
+└── _Duplicados/invoice-copy.pdf
 ```
 
-### Organize a specific folder
-```bash
-python main.py organize --path /path/to/folder
-```
+Duplicates are detected by content (SHA-256), not by name. They are **moved to
+`_Duplicados`, never deleted** — deciding which copy matters is your call, not
+the script's.
 
-### Simulation mode (without moving files)
-```bash
-python main.py organize --path /path --dry-run
-```
-
-### Analyze files without moving
-```bash
-python main.py analyze --path /path
-```
-
-## 📋 Available commands
+## Commands
 
 ### `organize`
-Organizes files into folders by type.
 
-**Options:**
-- `--path PATH`: Path to organize (default: current folder)
-- `--config CONFIG`: Custom JSON configuration file
-- `--dry-run`: Simulate without moving files
-- `--verbose`: Verbose mode for more detail
+Moves files into folders by type.
 
-**Example:**
+| Option | Meaning |
+| --- | --- |
+| `--path PATH` | Folder to organize (default: current directory). |
+| `--mode loose\|per-folder` | `loose` (default) only touches files sitting directly in `PATH`. `per-folder` walks the whole tree and sorts each folder's files inside that same folder. |
+| `--duplicates quarantine\|report\|ignore` | `quarantine` (default) moves copies to `_Duplicados`; `report` only lists them; `ignore` skips the check entirely (no file contents are read). |
+| `--config FILE` | JSON rules file. |
+| `--exclude NAME` | Folder name to never touch. Repeatable. |
+| `--report FILE` | Write a full Markdown report. |
+| `--dry-run` | Show the plan, change nothing. |
+| `--yes` | Don't ask for confirmation. |
+| `--verbose` / `--log-file FILE` | More detail / write a log. |
+
+The two modes exist because they solve different problems:
+
 ```bash
-python main.py organize --path ~/Downloads --dry-run
+# Clean up a download folder: only the loose files, subfolders untouched.
+python main.py organize --path ~/Downloads --yes
+
+# Tidy coursework: each subject folder gets its own Documentos/, Imágenes/...
+python main.py organize --path "D:/University" --mode per-folder --yes
 ```
 
 ### `analyze`
-Analyzes a folder and shows how the files would be organized.
 
-**Options:**
-- `--path PATH`: Folder to analyze (default: current folder)
-- `--config CONFIG`: Configuration file to use
+Shows how files would be grouped, with counts and sizes. Moves nothing.
 
-**Example:**
+### `find-projects`
+
+Lists folders that look like code projects, with the evidence for each.
+
 ```bash
-python main.py analyze --path ~/Downloads
+python main.py find-projects --path "C:/Users/me" --path "D:/work"
 ```
+
+A folder counts as a project when it has a marker file at its top level
+(`package.json`, `pyproject.toml`, `.git`, `project.godot`, `*.sln`, `*.ino`…)
+or its own source files. A folder that merely *contains* a project is not a
+project, so a directory holding recordings plus one game folder reports the game
+— not the directory. When several sibling projects share a parent that isn't one
+itself, the parent is reported as a monorepo, because moving the pieces apart
+would break the paths between them.
+
+### `move-projects`
+
+Moves project folders into one destination, without overwriting anything.
+
+```bash
+python main.py move-projects \
+  --path "C:/Users/me" \
+  --destination "D:/Github repository" --dry-run
+```
+
+| Option | Meaning |
+| --- | --- |
+| `--path PATH` | Where to look for projects. Repeatable. |
+| `--project PATH` | Move exactly this folder, skipping detection. Repeatable. |
+| `--destination PATH` | Target folder (or the `PROJECTS_DESTINATION` env var). |
+| `--dry-run` / `--yes` | As in `organize`. |
+
+If the destination already has a folder with that name, the move is **reported
+and skipped**. Two folders with the same name are usually two versions of the
+same project, and merging them blindly is exactly what you don't want.
 
 ### `init-config`
-Creates a default configuration file.
 
-**Options:**
-- `--config PATH`: Output path for the configuration file
+Writes the default rules to a JSON file you can edit. `--force` overwrites.
 
-**Example:**
-```bash
-python main.py init-config --config ./config/my-rules.json
-```
+## Configuration
 
-## 🔧 Custom configuration
-
-### Configuration file structure
-
-Create a `config/rules.json` file:
+### Rules
 
 ```json
 {
   "images": {
-    "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp"],
-    "folder": "Images"
+    "folder": "Imágenes",
+    "extensions": [".jpg", ".jpeg", ".png"]
   },
   "documents": {
-    "extensions": [".pdf", ".doc", ".docx", ".txt", ".xlsx"],
-    "folder": "Documents"
-  },
-  "videos": {
-    "extensions": [".mp4", ".avi", ".mkv", ".mov", ".wmv"],
-    "folder": "Videos"
+    "folder": "Documentos",
+    "extensions": [".pdf", ".docx", ".txt"]
   }
 }
 ```
 
+Anything whose extension isn't listed goes to `Otros`. If an extension appears
+in two categories the first one wins, and a warning says so.
+
+`folder` may be a nested path. That matters when a category name collides with a
+folder that already exists — for example at a OneDrive root, where `Documentos`
+is your real Documents folder:
+
+```json
+{ "documents": { "folder": "Sorted files/Documentos", "extensions": [".pdf"] } }
+```
+
+`config/rules-contenedor.json` is a ready-made ruleset that groups every
+category under `Archivos ordenados/` for exactly that case.
+
 ### Environment variables
 
-Copy `.env.example` to `.env` and customize:
+Optional, read from the environment or a `.env` file:
 
 ```bash
+CONFIG_FILE=config/rules.json
 LOG_LEVEL=INFO
 LOG_FILE=organizer.log
-CONFIG_FILE=config/rules.json
-WATCH_FOLDER=./downloads
-AUTO_ORGANIZE=false
+DUPLICATE_POLICY=quarantine
+PROJECTS_DESTINATION=D:/Github repository
 ```
 
-## 📚 Module documentation
+Values already set in the environment win over the `.env` file. An unreadable
+rules file or an invalid `DUPLICATE_POLICY` falls back to the safe default and
+logs a warning instead of failing.
 
-### `config.py`
-Manages the application configuration from environment variables and JSON files.
+## What it will not touch
 
-**Main classes:**
-- `ConfigManager`: Loads and manages the configuration
+- `desktop.ini`, `Thumbs.db`, `.DS_Store`, dotfiles.
+- `.lnk` and `.url` shortcuts, and partial downloads (`.tmp`, `.crdownload`,
+  `.part`). A shortcut points elsewhere from where it sits, so moving it breaks
+  the reference without organizing anything.
+- Tool and dependency folders: `.git`, `.venv`, `venv`, `node_modules`,
+  `__pycache__`, `dist`, `build`, `.vscode`, `.idea` and friends.
+- Any folder named `Github repository`, and the category folders themselves —
+  which is what makes running the command twice a no-op.
+- Files OneDrive keeps in the cloud are moved but never read, so organizing a
+  folder can't trigger a multi-gigabyte download. They're skipped by the
+  duplicate check for the same reason.
 
-### `classifier.py`
-Classifies files by type and extension.
+## Architecture
 
-**Main classes:**
-- `FileClassifier`: Classifies files individually and in batches
+Decisions and disk writes are deliberately separated:
 
-### `organizer.py`
-Orchestrates the organization of files into folders.
+```
+organizador/
+├── models.py         Immutable data: FileInfo, PlannedMove, OrganizePlan
+├── rules.py          Extension -> category index
+├── paths.py          Case-insensitive containment, unique names, length limit
+├── scanner.py        Walks the disk, applies exclusions (loose / per-folder)
+├── classifier.py     File -> category. Pure function
+├── duplicates.py     Size buckets, then SHA-256. Cloud-aware
+├── planner.py        Folder -> list of proposed moves. Writes nothing
+├── executor.py       The only module that writes
+├── projects.py       Project detection and relocation
+├── settings.py       Env vars and JSON rules
+├── logging_setup.py  Standard-library logging, configured once
+├── reporting.py      Console output and Markdown reports
+└── cli.py            argparse commands, thin
+```
 
-**Main classes:**
-- `FolderOrganizer`: Organizes files and keeps statistics
+The planner produces an `OrganizePlan`; the executor applies it. `--dry-run`
+builds the same plan and skips execution, so the simulation cannot disagree with
+the real run. Everything up to the plan is testable without touching a disk.
 
-### `cli.py`
-Provides the command-line interface.
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the reasoning behind each
+boundary.
 
-**Main functions:**
-- `organize()`: Main organization command
-- `analyze()`: Analyzes files without moving them
-- `init_config()`: Initializes the configuration file
-
-## 🧪 Tests
-
-Run the unit tests:
+## Tests
 
 ```bash
-pytest tests/
+python -m pytest tests -q
 ```
 
-With coverage:
+77 tests, no network and no fixtures outside `tmp_path`. They cover the cases
+that matter for a tool that moves files: idempotency, name conflicts, refusing
+to flatten a tree, quarantine instead of deletion, read-only files inside
+`.git`, and a dry run planning exactly what the real run does.
 
-```bash
-pytest tests/ --cov=src
-```
+## License
 
-## 📝 Project structure
-
-```
-.
-├── src/
-│   ├── __init__.py
-│   ├── config.py        # Configuration management
-│   ├── classifier.py    # File classification
-│   ├── organizer.py     # Orchestration
-│   └── cli.py           # Command-line interface
-├── tests/
-│   ├── __init__.py
-│   ├── test_classifier.py
-│   └── test_config.py
-├── config/
-│   └── rules.json.example
-├── docs/
-├── main.py              # Entry point
-├── requirements.txt
-├── .env.example
-└── README.md
-```
-
-## 🔄 How it works
-
-```
-User runs a CLI command
-         ↓
-ConfigManager loads configuration
-         ↓
-FileClassifier classifies files
-         ↓
-FolderOrganizer organizes files
-         ↓
-Logs and statistics
-```
-
-## 🐛 Usage examples
-
-### Case 1: Organize the downloads folder
-```bash
-python main.py organize --path ~/Downloads
-```
-
-### Case 2: Preview before organizing
-```bash
-python main.py analyze --path ~/Downloads
-python main.py organize --path ~/Downloads --dry-run
-python main.py organize --path ~/Downloads
-```
-
-### Case 3: Use a custom configuration
-```bash
-python main.py init-config --config config/custom-rules.json
-# Edit config/custom-rules.json
-python main.py organize --path ~/Downloads --config config/custom-rules.json
-```
-
-## 🔐 Safety
-
-- Duplicate files are renamed automatically
-- `--dry-run` mode to preview changes
-- Detailed logging of every operation
-- Nothing is deleted, only reorganized
-
-## 📦 Dependencies
-
-- **click**: CLI framework
-- **loguru**: Logging system
-- **python-dotenv**: Environment-variable management
-- **pathlib2**: Path manipulation
-
-## 📄 License
-
-This project is under the MIT license.
-
-## 👤 Author
-
-Built as a Python automation tool.
-
-## 🤝 Contributing
-
-Contributions are welcome. Please:
-
-1. Fork the project
-2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📧 Support
-
-To report issues or suggestions, open an issue in the repository.
-
----
-
-⭐ If it was useful, don't forget to give it a star! ⭐
+MIT — see [LICENSE](LICENSE).

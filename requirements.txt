@@ -1,4 +1,9 @@
-click==8.1.7
-python-dotenv==1.0.0
-loguru==0.7.2
-pathlib2==2.3.0
+# El organizador no necesita dependencias: usa sólo la biblioteca estándar
+# (argparse, logging, hashlib, shutil, pathlib) y funciona con Python 3.9+.
+#
+#     python main.py --help
+#
+# Para ejecutar las pruebas:
+#
+#     python -m pip install -r requirements-dev.txt
+#     python -m pytest tests -q

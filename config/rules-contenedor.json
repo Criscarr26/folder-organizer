@@ -1,38 +1,38 @@
 {
-  "imagenes": {
-    "folder": "Imágenes",
-    "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".heic", ".tif", ".tiff", ".ico"]
-  },
   "documentos": {
-    "folder": "Documentos",
+    "folder": "Archivos ordenados/Documentos",
     "extensions": [".pdf", ".doc", ".docx", ".txt", ".odt", ".rtf", ".md", ".tex", ".epub"]
   },
   "hojas_de_calculo": {
-    "folder": "Hojas de cálculo",
+    "folder": "Archivos ordenados/Hojas de cálculo",
     "extensions": [".xls", ".xlsx", ".xlsm", ".csv", ".tsv", ".ods"]
   },
   "presentaciones": {
-    "folder": "Presentaciones",
+    "folder": "Archivos ordenados/Presentaciones",
     "extensions": [".ppt", ".pptx", ".odp", ".key"]
   },
+  "imagenes": {
+    "folder": "Archivos ordenados/Imágenes",
+    "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".heic", ".tif", ".tiff", ".ico"]
+  },
   "videos": {
-    "folder": "Videos",
+    "folder": "Archivos ordenados/Videos",
     "extensions": [".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm", ".m4v"]
   },
   "audio": {
-    "folder": "Audio",
+    "folder": "Archivos ordenados/Audio",
     "extensions": [".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a", ".wma"]
   },
   "comprimidos": {
-    "folder": "Comprimidos",
+    "folder": "Archivos ordenados/Comprimidos",
     "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".iso"]
   },
   "codigo": {
-    "folder": "Código",
+    "folder": "Archivos ordenados/Código",
     "extensions": [".py", ".ipynb", ".js", ".ts", ".tsx", ".jsx", ".java", ".cs", ".cpp", ".c", ".h", ".sql", ".html", ".css", ".sh", ".ps1", ".ino", ".gd", ".json", ".yml", ".yaml"]
   },
   "instaladores": {
-    "folder": "Instaladores",
+    "folder": "Archivos ordenados/Instaladores",
     "extensions": [".exe", ".msi", ".msix", ".apk", ".deb", ".dmg"]
   }
 }

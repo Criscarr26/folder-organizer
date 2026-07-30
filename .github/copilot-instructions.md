@@ -1,50 +1,52 @@
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+# Instrucciones para asistentes de código
 
-## Automatización con Python - Organizador Automático de Carpetas
+Organizador automático de carpetas: CLI en Python que ordena archivos por tipo y
+reúne proyectos de código en una sola carpeta.
 
-- [x] Verify that the copilot-instructions.md file in the .github directory is created.
+## Reglas del proyecto
 
-- [x] Clarify Project Requirements
-  - Project Type: Python Application ✅
-  - Language: Python 3.11+ ✅
-  - Frameworks: click, pathlib, python-dotenv, loguru ✅
-  - Purpose: Automatic folder organization system ✅
+- **Sin dependencias.** Sólo biblioteca estándar (`argparse`, `logging`,
+  `hashlib`, `shutil`, `pathlib`), Python 3.9+. No añadas paquetes de terceros:
+  en el equipo de origen `pip` está detrás de un proxy que rompe TLS, y "clonar
+  y ejecutar" es un requisito, no una preferencia.
+- **Nada se borra.** Los duplicados van a `_Duplicados`. No existe una política
+  de borrado y no hay que añadirla.
+- **Sólo `executor.py` escribe en disco.** Si una función nueva necesita mover o
+  borrar algo, va ahí.
+- **Decidir y ejecutar están separados.** `planner` construye un `OrganizePlan`;
+  `executor` lo aplica. `--dry-run` construye el mismo plan y no lo ejecuta, así
+  que la simulación no puede desviarse de la ejecución real. No añadas ramas
+  `if dry_run` en la lógica de decisión.
+- **Los comandos de `cli.py` son finos:** ensamblan e imprimen. Cualquier
+  decisión nueva va a `planner` o `projects`.
 
-- [x] Scaffold the Project
-  - Create project structure with main modules ✅
-  - Initialize Python virtual environment (Python 3.11 disponible)
-  - Create requirements.txt for dependencies ✅
-  - Set up configuration system ✅
+## Estilo
 
-- [x] Customize the Project
-  - Implement core folder organizer module ✅
-  - Add file classification system ✅
-  - Create rule engine for organization ✅
-  - Add configuration management ✅
+- Código y comentarios en español, igual que el resto del repositorio.
+- Los comentarios explican *por qué*, no *qué*. Si documentan un caso real que
+  falló, menciónalo.
+- Anotaciones de tipo en las firmas públicas. `from __future__ import annotations`
+  en todos los módulos.
+- Dataclasses inmutables (`frozen=True`) para los datos de dominio.
 
-- [x] Install Required Extensions
-  - Python extension (ms-python.python) ✅
-  - Pylance extension (ms-python.vscode-pylance) ✅
+## Pruebas
 
-- [x] Compile the Project
-  - Install dependencies (ver nota de SSL abajo)
-  - Validate Python syntax ✅
-  - Run linting checks
-
-- [x] Create and Run Task
-  - Set up run task for main application ✅
-  - Set up test task ✅
-
-- [x] Launch the Project
-  - Demo basic functionality
-
-- [x] Ensure Documentation is Complete
-  - Update README.md with usage instructions ✅
-  - Document API and configuration ✅
-
-**Nota sobre SSL:** Existe un problema de certificado SSL con PyPI en este sistema. Para instalar las dependencias, ejecuta:
-```
-python -m pip install click python-dotenv loguru pytest
+```bash
+python -m pytest tests -q
 ```
 
-Usuarios alternativos pueden necesitar configurar certificados SSL en Windows o usar un espejo de PyPI alternativo.
+- Las pruebas afirman sobre el árbol de archivos resultante (`helpers.tree`), no
+  sobre el log.
+- `helpers.write` usa el nombre del archivo como contenido por defecto, para que
+  dos archivos distintos no resulten duplicados por accidente.
+- Todo va en `tmp_path`. Sin red y sin tocar carpetas reales.
+- Cualquier cambio de comportamiento en el movimiento de archivos necesita una
+  prueba que falle antes del cambio.
+
+## Antes de dar algo por terminado
+
+- `python -m pytest tests -q` en verde.
+- `python main.py --help` funciona con el Python del sistema, sin entorno virtual.
+- Si cambia el comportamiento de la CLI: actualiza `README.md`, `CHANGELOG.md` y
+  `docs/`. La documentación que describe módulos que ya no existen es peor que no
+  tener documentación.

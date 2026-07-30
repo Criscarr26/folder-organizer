@@ -2,18 +2,12 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Instalar dependencias",
+			"label": "Ejecutar tests",
 			"type": "shell",
 			"command": "python",
-			"args": [
-				"-m",
-				"pip",
-				"install",
-				"-r",
-				"requirements.txt"
-			],
+			"args": ["-m", "pytest", "tests", "-q"],
 			"group": {
-				"kind": "build",
+				"kind": "test",
 				"isDefault": true
 			},
 			"presentation": {
@@ -24,34 +18,36 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "Ejecutar organizador",
+			"label": "Ayuda del organizador",
 			"type": "shell",
 			"command": "python",
-			"args": [
-				"main.py",
-				"organize",
-				"--help"
-			],
-			"group": {
-				"kind": "test"
-			}
+			"args": ["main.py", "--help"],
+			"problemMatcher": []
 		},
 		{
-			"label": "Ejecutar tests",
+			"label": "Analizar carpeta de prueba",
 			"type": "shell",
 			"command": "python",
-			"args": [
-				"-m",
-				"pytest",
-				"tests/",
-				"-v"
-			]
+			"args": ["main.py", "analyze", "--path", "./test_organize"],
+			"problemMatcher": []
+		},
+		{
+			"label": "Simular organización de la carpeta de prueba",
+			"type": "shell",
+			"command": "python",
+			"args": ["main.py", "organize", "--path", "./test_organize", "--dry-run"],
+			"problemMatcher": []
 		},
 		{
 			"label": "Validar sintaxis",
 			"type": "shell",
-			"command": "python -m py_compile src/config.py src/classifier.py src/organizer.py src/cli.py main.py",
-			"group": "build"
+			"command": "python",
+			"args": ["-m", "compileall", "-q", "organizador", "main.py"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": []
 		}
 	]
 }

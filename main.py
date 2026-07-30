@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""
-Script principal del Organizador Automático de Carpetas
+"""Punto de entrada del Organizador Automático de Carpetas.
+
+    python main.py organize --path "C:/ruta" --dry-run
+    python main.py move-projects --path "C:/ruta" --destination "C:/Github repository"
 """
 
-from src.cli import cli
+from organizador.cli import main
 
 if __name__ == "__main__":
-    cli()
+    raise SystemExit(main())
