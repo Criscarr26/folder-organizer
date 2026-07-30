@@ -181,7 +181,11 @@ logs a warning instead of failing.
 - Tool and dependency folders: `.git`, `.venv`, `venv`, `node_modules`,
   `__pycache__`, `dist`, `build`, `.vscode`, `.idea` and friends.
 - Any folder named `Github repository`, and the category folders themselves —
-  which is what makes running the command twice a no-op.
+  which is what makes running the command twice a no-op. Note the trade-off:
+  the match is by name, so a legitimate folder that happens to be called
+  `Imágenes` or `Documentos` (a WinForms `Resources/Imágenes`, say) is skipped
+  too. Skipping is the safe direction, but if you want such a folder sorted,
+  rename the category in your rules file.
 - Files OneDrive keeps in the cloud are moved but never read, so organizing a
   folder can't trigger a multi-gigabyte download. They're skipped by the
   duplicate check for the same reason.
