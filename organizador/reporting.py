@@ -51,6 +51,33 @@ def plan_lines(plan: OrganizePlan, *, limit: int = 6) -> list[str]:
     return lines
 
 
+def undo_lines(plan: OrganizePlan, *, limit: int = 12) -> list[str]:
+    """Resumen de qué carpetas se vaciarían y hacia dónde."""
+    lines = [f"Deshacer organización en: {plan.root}", _RULE]
+    if not plan.moves:
+        lines.append("No hay carpetas de categoría que deshacer.")
+
+    por_carpeta: dict[Path, list[PlannedMove]] = {}
+    for move in plan.moves:
+        por_carpeta.setdefault(move.source.parent, []).append(move)
+
+    for folder, moves in sorted(por_carpeta.items())[:limit]:
+        destino = relative_to_root(folder.parent, plan.root)
+        lines.append(
+            f"{relative_to_root(folder, plan.root)}  ->  {destino or '.'}/"
+            f"   ({len(moves)} archivo(s))"
+        )
+    if len(por_carpeta) > limit:
+        lines.append(f"    ... y {len(por_carpeta) - limit} carpeta(s) más")
+
+    lines.append(_RULE)
+    lines.append(
+        f"{len(por_carpeta)} carpeta(s) de categoría · {len(plan.moves)} archivo(s) a devolver"
+        + (f" · {len(plan.skipped)} sin tocar" if plan.skipped else "")
+    )
+    return lines
+
+
 def execution_lines(result: ExecutionResult) -> list[str]:
     verb = "Se moverían" if result.dry_run else "Movidos"
     lines = [

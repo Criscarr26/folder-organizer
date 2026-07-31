@@ -48,7 +48,11 @@ class PlanExecutor:
 
         if not move.source.exists():
             raise FileNotFoundError(f"el archivo ya no existe ({move.source})")
-        if is_too_long(move.destination):
+        # Sólo estorba si el destino es MÁS largo que el origen. Si el origen ya
+        # existe con esa longitud, el sistema la tolera, y al deshacer una
+        # organización el destino siempre es más corto: rechazarlo dejaba
+        # archivos atrapados en la carpeta que se intentaba vaciar.
+        if is_too_long(move.destination) and len(str(move.destination)) > len(str(move.source)):
             raise OSError(
                 f"la ruta destino supera {MAX_PATH_LENGTH} caracteres "
                 f"({len(str(move.destination))})"

@@ -20,6 +20,7 @@ from .planner import OrganizePlanner
 from .projects import ProjectCandidate, ProjectDetector, ProjectMover
 from .scanner import FileScanner, ScanFilter, ScanMode
 from .settings import Settings, load_dotenv, load_ruleset, write_default_config
+from .undo import UndoPlanner, remove_empty_folders, undo_scan_filter
 
 EXIT_OK = 0
 EXIT_ERROR = 1
@@ -95,6 +96,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_apply_flags(move_projects)
     move_projects.set_defaults(handler=cmd_move_projects)
+
+    undo = subparsers.add_parser(
+        "undo",
+        help="Deshace una organización: devuelve los archivos a su carpeta madre.",
+    )
+    _add_shared(undo)
+    undo.add_argument("--path", type=Path, default=Path("."), help="Carpeta a deshacer.")
+    undo.add_argument(
+        "--solo-seguras", action="store_true",
+        help="Sólo deshace las carpetas de categoría que son el único contenido de "
+             "su carpeta madre, que es la firma clara de una organización previa.",
+    )
+    undo.add_argument("--report", type=Path, default=None, help="Guarda un informe Markdown.")
+    _add_apply_flags(undo)
+    undo.set_defaults(handler=cmd_undo)
 
     init_config = subparsers.add_parser(
         "init-config", help="Escribe un archivo de reglas que puedas editar."
@@ -229,6 +245,37 @@ def cmd_move_projects(args: argparse.Namespace, settings: Settings) -> int:
     results = mover.move_all(candidates)
     _emit(reporting.project_move_lines(results, dry_run=args.dry_run))
     return EXIT_OK
+
+
+def cmd_undo(args: argparse.Namespace, settings: Settings) -> int:
+    ruleset = load_ruleset(args.config or settings.config_file)
+    planner = UndoPlanner(
+        ruleset,
+        undo_scan_filter(set(args.exclude or [])),
+        only_sole_child=args.solo_seguras,
+    )
+
+    plan = planner.plan(args.path)
+    _emit(reporting.undo_lines(plan))
+
+    if not plan.moves:
+        return EXIT_OK
+    if not args.dry_run and not _confirm(
+        f"¿Devolver {len(plan.moves)} archivo(s) a su carpeta madre?", args.yes
+    ):
+        print("Cancelado. No se ha movido nada.")
+        return EXIT_OK
+
+    result = PlanExecutor(dry_run=args.dry_run).execute(plan)
+    removed = remove_empty_folders(plan, dry_run=args.dry_run)
+    _emit(reporting.execution_lines(result))
+    print(f"  Carpetas de categoría vaciadas: {len(removed)}")
+
+    if args.report:
+        reporting.write_markdown_report(args.report, plan, result)
+        print(f"Informe guardado en: {args.report}")
+
+    return EXIT_ERROR if result.errors else EXIT_OK
 
 
 def cmd_init_config(args: argparse.Namespace, settings: Settings) -> int:

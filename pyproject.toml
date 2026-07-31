@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "organizador-carpetas"
-version = "2.0.0"
+version = "2.1.0"
 description = "Organiza archivos por tipo y reúne tus proyectos de código en una sola carpeta."
 readme = "README.md"
 requires-python = ">=3.9"

@@ -4,6 +4,34 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning follows [Semantic Versioning](https://semver.org/).
 
+## [2.1.0]
+
+### Added
+
+- `undo` — reverses an organization, moving files out of the category folders
+  back into their parent and removing the folders it empties. Written to repair
+  what 1.0 did: run over a folder tree, it had buried an icon theme's PNGs in
+  `apps/Imágenes/`, a Visual Studio `.sln` in `Otros/`, and several projects'
+  source files away from the code that imported them.
+  - Knows every folder name this tool has used, including `Archivos` and
+    `Ejecutables` from 1.0 and the `_Duplicados` quarantine.
+  - `--solo-seguras` restricts it to category folders that are the sole entry
+    in their parent, the clearest signature of a previous run.
+  - Moves hidden and protected files too. `organize` leaves them alone, but
+    anything *inside* a category folder was put there by this tool, and 1.0 did
+    not spare dotfiles — skipping them would strand a `.env.example` for good.
+
+### Fixed
+
+- **Emptied folders are removed even when marked read-only.** `rmdir` answers
+  "Access is denied" on a read-only directory even when it is empty, and folders
+  inside OneDrive carry that attribute routinely. 147 folders survived a repair
+  run before this was fixed.
+- **The path-length guard no longer blocks moves that shorten the path.** It
+  compared the destination against the limit without looking at the source, so
+  a file already living at a 267-character path could not be moved up to a
+  256-character one — trapping it in the very folder being emptied.
+
 ## [2.0.0]
 
 Rewrite around a plan/execute split. The CLI keeps its command names, so
@@ -62,7 +90,7 @@ existing invocations of `organize`, `analyze` and `init-config` still work.
   `node_modules`, build output, editor metadata, and `Github repository`.
 - Path-length guard: a destination over 255 characters is reported per file
   instead of crashing the run.
-- 77 tests covering idempotency, conflicts, quarantine, exclusions, both scan
+- Tests covering idempotency, conflicts, quarantine, exclusions, both scan
   modes, project detection, and dry-run/real-run equivalence.
 - `pyproject.toml` with an `organizador` console script.
 

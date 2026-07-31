@@ -17,6 +17,7 @@ class MoveReason(str, Enum):
 
     CLASSIFIED = "clasificado"
     DUPLICATE = "duplicado"
+    UNDO = "devuelto a su carpeta"
 
 
 @dataclass(frozen=True)

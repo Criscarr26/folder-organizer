@@ -80,6 +80,30 @@ python main.py organize --path ~/Downloads --yes
 python main.py organize --path "D:/University" --mode per-folder --yes
 ```
 
+### `undo`
+
+Reverses an organization: moves every file out of the category folders and back
+into its parent, then removes the folders it emptied.
+
+```bash
+python main.py undo --path "D:/University" --dry-run
+```
+
+| Option | Meaning |
+| --- | --- |
+| `--path PATH` | Folder to undo. |
+| `--solo-seguras` | Only undo category folders that are the *sole* entry in their parent — the clearest signature of a previous run. |
+| `--config`, `--exclude`, `--report`, `--dry-run`, `--yes` | As in `organize`. |
+
+It recognises the folder names this tool has ever used, including `Archivos` and
+`Ejecutables` from 1.0, and the `_Duplicados` quarantine. It never overwrites: a
+name already taken in the parent gets a `_1` suffix.
+
+Unlike `organize`, `undo` also moves hidden files and files like `desktop.ini`.
+Anything sitting inside a category folder was put there by this tool, so it goes
+back — otherwise a `.env.example` swept up by an older version would stay buried
+forever.
+
 ### `analyze`
 
 Shows how files would be grouped, with counts and sizes. Moves nothing.
@@ -205,6 +229,7 @@ organizador/
 ├── planner.py        Folder -> list of proposed moves. Writes nothing
 ├── executor.py       The only module that writes
 ├── projects.py       Project detection and relocation
+├── undo.py           Reverses an organization
 ├── settings.py       Env vars and JSON rules
 ├── logging_setup.py  Standard-library logging, configured once
 ├── reporting.py      Console output and Markdown reports
@@ -224,7 +249,7 @@ boundary.
 python -m pytest tests -q
 ```
 
-77 tests, no network and no fixtures outside `tmp_path`. They cover the cases
+91 tests, no network and no fixtures outside `tmp_path`. They cover the cases
 that matter for a tool that moves files: idempotency, name conflicts, refusing
 to flatten a tree, quarantine instead of deletion, read-only files inside
 `.git`, and a dry run planning exactly what the real run does.
