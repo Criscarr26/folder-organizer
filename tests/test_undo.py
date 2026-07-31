@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import os
+import stat
+
+import pytest
+
 from organizador.executor import PlanExecutor
 from organizador.rules import Ruleset
 from organizador.undo import UndoPlanner, remove_empty_folders, undo_scan_filter
@@ -126,12 +131,15 @@ def test_deshace_las_carpetas_de_la_version_1(tmp_path):
     assert tree(tmp_path) == {"descargas/backup.zip", "programas/setup.exe"}
 
 
+@pytest.mark.skipif(
+    os.name != "nt",
+    reason="El atributo de sólo lectura de Windows no tiene equivalente en POSIX: "
+           "allí `chmod(dir, S_IREAD)` quita el bit de ejecución y ni siquiera deja "
+           "leer lo que hay dentro, que es un escenario distinto.",
+)
 def test_borra_la_carpeta_aunque_sea_de_solo_lectura(tmp_path):
     # Las carpetas dentro de OneDrive suelen llevar el atributo de sólo lectura,
     # y `rmdir` responde "Access is denied" aunque estén vacías.
-    import os
-    import stat
-
     write(tmp_path / "apps" / "Imágenes" / "3d.png")
     os.chmod(tmp_path / "apps" / "Imágenes", stat.S_IREAD)
 
