@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .duplicates import DuplicatePolicy
-from .rules import DEFAULT_RULES, Ruleset
+from .rules import DEFAULT_RULES, FALLBACK_CATEGORY, Ruleset
 
 logger = logging.getLogger(__name__)
 
@@ -78,32 +78,36 @@ def load_dotenv(path: Path = Path(".env")) -> None:
         os.environ.setdefault(key.strip(), value.strip().strip("'\""))
 
 
-def load_ruleset(config_file: Path | None) -> Ruleset:
+def load_ruleset(config_file: Path | None, *, con_comodin: bool = True) -> Ruleset:
     """Lee las reglas del JSON indicado; usa las de por defecto si no se puede.
 
     Un JSON corrupto avisa y no detiene la ejecución: el usuario quiere ordenar
     su carpeta, y las reglas por defecto son un resultado razonable.
+
+    Con `con_comodin=False` los archivos cuya extensión no aparezca en las
+    reglas se quedan donde están en vez de ir a `Otros/`.
     """
+    comodin = FALLBACK_CATEGORY if con_comodin else None
     if config_file is None:
-        return Ruleset.default()
+        return Ruleset.from_mapping(DEFAULT_RULES, comodin)
 
     path = Path(config_file)
     if not path.is_file():
         logger.info("No hay configuración en %s; se usan las reglas por defecto.", path)
-        return Ruleset.default()
+        return Ruleset.from_mapping(DEFAULT_RULES, comodin)
 
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         logger.warning("No se pudo leer %s (%s); se usan las reglas por defecto.", path, exc)
-        return Ruleset.default()
+        return Ruleset.from_mapping(DEFAULT_RULES, comodin)
 
     if not isinstance(raw, dict) or not raw:
         logger.warning("%s no contiene un objeto de reglas; se usan las de por defecto.", path)
-        return Ruleset.default()
+        return Ruleset.from_mapping(DEFAULT_RULES, comodin)
 
     logger.info("Reglas cargadas desde %s (%d categorías).", path, len(raw))
-    return Ruleset.from_mapping(raw)
+    return Ruleset.from_mapping(raw, comodin)
 
 
 def write_default_config(path: Path, *, overwrite: bool = False) -> bool:

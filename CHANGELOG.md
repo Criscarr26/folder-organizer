@@ -4,6 +4,35 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning follows [Semantic Versioning](https://semver.org/).
 
+## [2.2.0]
+
+Ordenar una carpeta de apuntes reveló que el organizador sólo sabía funcionar
+en carpetas homogéneas. En una carpeta de universidad conviven los PDF de clase
+con un tema de iconos, dos programas instalados y varios proyectos de código, y
+la versión anterior se llevaba por delante los tres últimos.
+
+### Added
+
+- `--solo-clasificados`: los archivos cuya extensión no aparece en las reglas se
+  quedan donde están, en vez de acabar en `Otros/`. Sin esto, ordenar los
+  apuntes de una carpeta arrastraba también los 3.582 PNG de un tema de iconos,
+  los `.dll` de un paquete y el código de los proyectos.
+- `--exclude-path RUTA` (repetible): excluye una carpeta concreta por su ruta.
+  `--exclude` compara por nombre, y eso no distingue una instalación en `dia/`
+  de una asignatura llamada `DIA/`.
+- `config/rules-apuntes.json`: reglas sólo para documentos de clase. Deja fuera
+  `.txt` y `.csv` a propósito, porque mover un `requirements.txt` rompe el
+  proyecto que lo contiene.
+
+### Fixed
+
+- **La cuarentena de duplicados ya no toca archivos que las reglas no cubren.**
+  La detección de duplicados corría antes de clasificar, así que con
+  `--solo-clasificados` seguía moviendo a `_Duplicados/` cosas que se había
+  prometido no tocar: en una prueba real, 2.240 archivos de un programa
+  instalado, cuyos `.dll` e iconos repetidos son copias legítimas. Clasificar va
+  primero: lo que no se va a ordenar no se mira siquiera.
+
 ## [2.1.0]
 
 ### Added

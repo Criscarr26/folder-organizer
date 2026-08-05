@@ -65,6 +65,8 @@ Moves files into folders by type.
 | `--duplicates quarantine\|report\|ignore` | `quarantine` (default) moves copies to `_Duplicados`; `report` only lists them; `ignore` skips the check entirely (no file contents are read). |
 | `--config FILE` | JSON rules file. |
 | `--exclude NAME` | Folder name to never touch. Repeatable. |
+| `--exclude-path PATH` | A specific folder to never touch, by path. Repeatable — for when the name doesn't distinguish it. |
+| `--solo-clasificados` | Leave files alone when no rule covers their extension, instead of sweeping them into `Otros/`. |
 | `--report FILE` | Write a full Markdown report. |
 | `--dry-run` | Show the plan, change nothing. |
 | `--yes` | Don't ask for confirmation. |

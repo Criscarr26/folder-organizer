@@ -33,7 +33,10 @@ logger = logging.getLogger(__name__)
 LEGACY_FOLDERS: frozenset[str] = frozenset({"Archivos", "Ejecutables"})
 
 
-def undo_scan_filter(extra_dirs: set[str] | None = None) -> ScanFilter:
+def undo_scan_filter(
+    extra_dirs: set[str] | None = None,
+    excluded_paths: set | None = None,
+) -> ScanFilter:
     """Filtro para deshacer: hay que poder *entrar* en las carpetas de categoría.
 
     El filtro de `organize` las excluye para ser idempotente; aquí son
@@ -50,6 +53,7 @@ def undo_scan_filter(extra_dirs: set[str] | None = None) -> ScanFilter:
     excluded = (set(DEFAULT_EXCLUDED_DIRS) - {"_duplicados"}) | set(extra_dirs or ())
     return ScanFilter(
         excluded_dirs=frozenset(excluded),
+        excluded_paths=frozenset(excluded_paths or ()),
         protected_filenames=frozenset(),
         protected_suffixes=frozenset(),
         skip_hidden=False,

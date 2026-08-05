@@ -16,12 +16,19 @@ class FileClassifier:
     def __init__(self, ruleset: Ruleset) -> None:
         self.ruleset = ruleset
 
-    def classify(self, file: FileInfo) -> Category:
+    def classify(self, file: FileInfo) -> Category | None:
+        """La categoría del archivo, o None si no hay regla que lo cubra."""
         return self.ruleset.category_for(file.extension)
 
     def summarize(self, files: list[FileInfo]) -> dict[Category, list[FileInfo]]:
-        """Agrupa archivos por categoría, para el comando `analyze`."""
+        """Agrupa archivos por categoría, para el comando `analyze`.
+
+        Los archivos sin categoría no aparecen: el comando informa de lo que se
+        movería, y ésos se quedan donde están.
+        """
         grouped: dict[Category, list[FileInfo]] = {}
         for file in files:
-            grouped.setdefault(self.classify(file), []).append(file)
+            category = self.classify(file)
+            if category is not None:
+                grouped.setdefault(category, []).append(file)
         return dict(sorted(grouped.items(), key=lambda item: item[0].folder))

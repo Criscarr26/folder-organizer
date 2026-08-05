@@ -1,0 +1,14 @@
+{
+  "documentos": {
+    "folder": "Documentos",
+    "extensions": [".pdf", ".doc", ".docx", ".odt", ".rtf"]
+  },
+  "hojas_de_calculo": {
+    "folder": "Hojas de cálculo",
+    "extensions": [".xls", ".xlsx", ".xlsm", ".ods"]
+  },
+  "presentaciones": {
+    "folder": "Presentaciones",
+    "extensions": [".ppt", ".pptx", ".odp"]
+  }
+}

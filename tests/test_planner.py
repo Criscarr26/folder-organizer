@@ -334,3 +334,95 @@ def test_plan_counts_add_up(tmp_path):
     assert plan.scanned == len(plan.moves) + len(plan.skipped)
     assert len(plan.moves) == 1
     assert plan.moves[0].reason is MoveReason.CLASSIFIED
+
+
+# --------------------------------------------------------------------------- #
+# Reglas sin comodín: lo no listado no se toca
+# --------------------------------------------------------------------------- #
+
+def sin_comodin(mapping):
+    ruleset = Ruleset.from_mapping(mapping, None)
+    scan_filter = ScanFilter.build(extra_dirs=set(ruleset.folders))
+    return OrganizePlanner(FileClassifier(ruleset), FileScanner(scan_filter))
+
+
+def test_sin_comodin_lo_no_listado_se_queda_donde_esta(tmp_path):
+    # El caso real: una carpeta de asignatura con los PDF de clase al lado de
+    # un tema de iconos y el código de un proyecto. Mover los PNG a Imágenes/
+    # rompe el tema, y los .py a Código/ rompen los imports.
+    write(tmp_path / "tarea.pdf")
+    write(tmp_path / "icono.png")
+    write(tmp_path / "script.py")
+
+    plan = sin_comodin(
+        {"docs": {"folder": "Documentos", "extensions": [".pdf"]}}
+    ).plan(tmp_path, ScanMode.LOOSE)
+    PlanExecutor().execute(plan)
+
+    assert tree(tmp_path) == {"Documentos/tarea.pdf", "icono.png", "script.py"}
+    assert len(plan.skipped) == 2
+    assert all("no está en las reglas" in s.reason for s in plan.skipped)
+
+
+def test_con_comodin_sigue_mandando_lo_desconocido_a_otros(tmp_path):
+    # El comportamiento por defecto no cambia.
+    write(tmp_path / "tarea.pdf")
+    write(tmp_path / "icono.png")
+
+    ruleset = Ruleset.from_mapping({"docs": {"folder": "Documentos", "extensions": [".pdf"]}})
+    scan_filter = ScanFilter.build(extra_dirs=set(ruleset.folders))
+    planner = OrganizePlanner(FileClassifier(ruleset), FileScanner(scan_filter))
+    PlanExecutor().execute(planner.plan(tmp_path, ScanMode.LOOSE))
+
+    assert tree(tmp_path) == {"Documentos/tarea.pdf", "Otros/icono.png"}
+
+
+def test_sin_comodin_no_deja_de_detectar_duplicados(tmp_path):
+    write(tmp_path / "a.pdf", "mismo")
+    write(tmp_path / "b.pdf", "mismo")
+
+    plan = sin_comodin({"docs": {"folder": "Documentos", "extensions": [".pdf"]}}).plan(
+        tmp_path, ScanMode.LOOSE
+    )
+    result = PlanExecutor().execute(plan)
+
+    assert result.duplicates == 1
+
+
+def test_sin_comodin_folders_no_incluye_otros(tmp_path):
+    ruleset = Ruleset.from_mapping({"docs": {"folder": "Documentos", "extensions": [".pdf"]}}, None)
+    assert ruleset.folders == frozenset({"Documentos"})
+    assert ruleset.category_for(".png") is None
+
+
+def test_sin_comodin_no_manda_a_cuarentena_lo_que_no_clasifica(tmp_path):
+    # Encontrado ordenando una carpeta de apuntes que además contenía un
+    # programa instalado: sus .dll repetidos son copias legítimas, y la
+    # cuarentena de duplicados se los llevaba aunque las reglas no los cubrieran.
+    write(tmp_path / "manual.pdf", "documento")
+    write(tmp_path / "libA.dll", "binario idéntico")
+    write(tmp_path / "libB.dll", "binario idéntico")
+
+    plan = sin_comodin({"docs": {"folder": "Documentos", "extensions": [".pdf"]}}).plan(
+        tmp_path, ScanMode.LOOSE
+    )
+    result = PlanExecutor().execute(plan)
+
+    assert result.duplicates == 0
+    assert tree(tmp_path) == {"Documentos/manual.pdf", "libA.dll", "libB.dll"}
+
+
+def test_excluir_por_ruta_distingue_carpetas_del_mismo_nombre(tmp_path):
+    # Excluir por nombre no vale cuando el nombre se repite: una instalación de
+    # un programa en `dia/` y una asignatura en `Quinto/DIA` no se distinguen.
+    write(tmp_path / "dia" / "manual.pdf", "programa instalado")
+    write(tmp_path / "Quinto" / "DIA" / "apuntes.pdf", "asignatura")
+
+    ruleset = Ruleset.default()
+    scan_filter = ScanFilter.build(
+        extra_dirs=set(ruleset.folders), excluded_paths={tmp_path / "dia"}
+    )
+    planner = OrganizePlanner(FileClassifier(ruleset), FileScanner(scan_filter))
+    PlanExecutor().execute(planner.plan(tmp_path, ScanMode.PER_FOLDER))
+
+    assert tree(tmp_path) == {"dia/manual.pdf", "Quinto/DIA/Documentos/apuntes.pdf"}

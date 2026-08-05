@@ -53,6 +53,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Qué hacer con los archivos repetidos. 'quarantine' (por defecto) los "
              "mueve a _Duplicados; nunca se borra nada.",
     )
+    organize.add_argument(
+        "--solo-clasificados", action="store_true",
+        help="Deja donde están los archivos cuya extensión no aparezca en las reglas, "
+             "en vez de mandarlos a Otros/. Útil en carpetas donde conviven documentos "
+             "con cosas que no deben moverse (iconos, dependencias, código).",
+    )
     organize.add_argument("--report", type=Path, default=None, help="Guarda un informe Markdown.")
     _add_apply_flags(organize)
     organize.set_defaults(handler=cmd_organize)
@@ -128,6 +134,12 @@ def _add_shared(sub: argparse.ArgumentParser) -> None:
         "--exclude", action="append", default=[], metavar="NOMBRE",
         help="Nombre de carpeta que nunca se toca. Se puede repetir.",
     )
+    sub.add_argument(
+        "--exclude-path", action="append", default=[], metavar="RUTA", type=Path,
+        help="Carpeta concreta que nunca se toca, por su ruta. Se puede repetir. "
+             "Úsalo cuando el nombre no sirve para distinguirla: excluir 'dia' por "
+             "nombre se llevaría por delante una asignatura llamada 'DIA'.",
+    )
     sub.add_argument("--verbose", action="store_true", help="Muestra el detalle de cada paso.")
     sub.add_argument("--log-file", type=Path, default=None, help="Archivo donde guardar el log.")
 
@@ -149,7 +161,9 @@ def cmd_organize(args: argparse.Namespace, settings: Settings) -> int:
     policy = (
         DuplicatePolicy(args.duplicates) if args.duplicates else settings.duplicate_policy
     )
-    ruleset = load_ruleset(args.config or settings.config_file)
+    ruleset = load_ruleset(
+        args.config or settings.config_file, con_comodin=not args.solo_clasificados
+    )
     scanner = FileScanner(_scan_filter(args, ruleset))
     planner = OrganizePlanner(
         FileClassifier(ruleset), scanner, duplicate_policy=policy
@@ -251,7 +265,7 @@ def cmd_undo(args: argparse.Namespace, settings: Settings) -> int:
     ruleset = load_ruleset(args.config or settings.config_file)
     planner = UndoPlanner(
         ruleset,
-        undo_scan_filter(set(args.exclude or [])),
+        undo_scan_filter(set(args.exclude or []), set(args.exclude_path or [])),
         only_sole_child=args.solo_seguras,
     )
 
@@ -300,7 +314,9 @@ def _scan_filter(args: argparse.Namespace, ruleset=None) -> ScanFilter:
     extra = set(args.exclude or [])
     if ruleset is not None:
         extra |= set(ruleset.folders)
-    return ScanFilter.build(extra_dirs=extra)
+    return ScanFilter.build(
+        extra_dirs=extra, excluded_paths=set(getattr(args, "exclude_path", None) or [])
+    )
 
 
 def _confirm(question: str, assume_yes: bool) -> bool:

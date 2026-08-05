@@ -75,7 +75,7 @@ class Ruleset:
     def __init__(
         self,
         categories: Iterable[Category],
-        fallback: Category = FALLBACK_CATEGORY,
+        fallback: Category | None = FALLBACK_CATEGORY,
     ) -> None:
         self.categories = tuple(categories)
         self.fallback = fallback
@@ -96,7 +96,7 @@ class Ruleset:
     def from_mapping(
         cls,
         mapping: Mapping[str, Mapping[str, Any]],
-        fallback: Category = FALLBACK_CATEGORY,
+        fallback: Category | None = FALLBACK_CATEGORY,
     ) -> Ruleset:
         """Construye un `Ruleset` desde la estructura del JSON de configuración."""
         categories = []
@@ -117,7 +117,15 @@ class Ruleset:
     def default(cls) -> Ruleset:
         return cls.from_mapping(DEFAULT_RULES)
 
-    def category_for(self, extension: str) -> Category:
+    def category_for(self, extension: str) -> Category | None:
+        """La categoría de una extensión, o None si no hay dónde ponerla.
+
+        Devuelve None sólo cuando el ruleset se construyó sin comodín. Es la
+        diferencia entre "lo que no reconozco va a Otros/" y "lo que no
+        reconozco no se toca", y hace falta para ordenar una carpeta donde
+        conviven documentos con cosas que no deben moverse: los PNG de un tema
+        de iconos, los .dll de un paquete, el código de un proyecto.
+        """
         return self.extension_map.get(extension.lower(), self.fallback)
 
     @property
@@ -127,9 +135,10 @@ class Ruleset:
         El scanner las excluye para que volver a ejecutar el organizador sobre
         una carpeta ya ordenada no vuelva a barajar lo que ya está en su sitio.
         """
-        return frozenset(
-            [category.folder for category in self.categories] + [self.fallback.folder]
-        )
+        nombres = [category.folder for category in self.categories]
+        if self.fallback is not None:
+            nombres.append(self.fallback.folder)
+        return frozenset(nombres)
 
     def to_mapping(self) -> dict[str, dict[str, Any]]:
         return {

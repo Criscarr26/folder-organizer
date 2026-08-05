@@ -65,12 +65,21 @@ class OrganizePlanner:
         claimed: set[Path],
     ) -> None:
         for file in files:
+            # Clasificar va primero. Un archivo que las reglas no cubren no se
+            # toca en absoluto, y eso incluye no mandarlo a la cuarentena de
+            # duplicados: al ordenar apuntes dentro de una carpeta que además
+            # contiene un programa instalado, sus .dll y sus iconos repetidos
+            # son copias legítimas, y moverlos rompe la instalación.
+            category = self._classifier.classify(file)
+            if category is None:
+                plan.skipped.append(SkippedFile(file, "su extensión no está en las reglas"))
+                continue
+
             duplicate_of = self._duplicate_of(file, index)
             if duplicate_of is not None:
                 self._plan_duplicate(anchor, file, duplicate_of, plan, claimed)
                 continue
 
-            category = self._classifier.classify(file)
             target_folder = anchor / category.folder
             if file.path.parent == target_folder:
                 plan.skipped.append(SkippedFile(file, "ya está en su carpeta"))
